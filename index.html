@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Supuestos Prácticos</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #eef;
+            border-radius: 8px;
+            white-space: pre-line;
+            font-size: 14px;
+            text-align: left;
+        }
+        #timer {
+            font-size: 18px;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Generador de Supuestos Prácticos</h2>
+    <button onclick="generarAzar()">Generar Supuesto Aleatorio</button>
+    <div class="output" id="output"></div>
+    <h3>Temporizador</h3>
+    <button onclick="iniciarTemporizador(45)">Iniciar 45 min</button>
+    <button onclick="iniciarTemporizador(60)">Iniciar 60 min</button>
+    <p id="timer">Tiempo restante: --:--</p>
+</div>
+
+<script>
+    const cursosPorEtapa = {
+        "Infantil": ["1º", "2º", "3º"],
+        "Primaria": ["1º", "2º", "3º", "4º", "5º", "6º"],
+        "ESO": ["1º", "2º"],
+        "EBO": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+    };
+
+    const centrosPorNEE = {
+        "Retraso Global del Desarrollo": { centros: ["Centro Ordinario"], etapas: ["Infantil"] },
+        "Discapacidad Motora": { centros: ["Centro Ordinario", "Centro Preferente"], etapas: ["Infantil", "Primaria", "ESO"] },
+        "Discapacidad Visual": { centros: ["Centro Ordinario"], etapas: ["Infantil", "Primaria", "ESO"] },
+        "Discapacidad Auditiva": { centros: ["Centro Ordinario", "Centro Preferente"], etapas: ["Infantil", "Primaria", "ESO"] },
+        "TEL mixto": { centros: ["Centro Ordinario"], etapas: ["Primaria", "ESO"] },
+        "Discapacidad Intelectual Leve": { centros: ["Centro Ordinario"], etapas: ["Primaria", "ESO"] },
+        "Discapacidad Intelectual Moderado": { centros: ["Centro Educación Especial"], etapas: ["EBO"] },
+        "Discapacidad Intelectual Grave": { centros: ["Centro Educación Especial"], etapas: ["EBO"] },
+        "TEA": { centros: ["Centro Ordinario", "Centro Ordinario con Aula TEA", "Centro Educación Especial"], etapas: ["Infantil", "Primaria", "ESO", "EBO"] },
+    };
+
+    const contextoFamiliar = ["familia colaboradora", "familia ausente", "familia sobreprotectora", "familia con dificultades", "familia en conflicto", "familia con expectativas altas"];
+    const entornoEscolar = ["centro urbano con alta diversidad", "centro rural", "barrio con alta presencia de población migrante", "proyecto de innovación tecnológica", "claustro con necesidades de formación en inclusión"];
+    const estilosAprendizaje = ["manipulativo", "estructurado", "en pequeños grupo", "medidado por las TIC", "autónomo e independiente", "con apoyos en la regulación emocional"];
+    const problemasConducta = ["sin problemas de conducta", "dificultades en la adaptación a normas", "baja tolerancia a la frustración", "impulsividad y falta de autocontrol", "conducta desafiante", "problemas de socialización"];
+
+    function generarAzar() {
+        const neeKeys = Object.keys(centrosPorNEE);
+        const neeSeleccionada = neeKeys[Math.floor(Math.random() * neeKeys.length)];
+        const centrosValidos = centrosPorNEE[neeSeleccionada].centros;
+        const centroSeleccionado = centrosValidos[Math.floor(Math.random() * centrosValidos.length)];
+        const etapasValidas = centrosPorNEE[neeSeleccionada].etapas;
+        const etapaSeleccionada = etapasValidas[Math.floor(Math.random() * etapasValidas.length)];
+        const cursoSeleccionado = cursosPorEtapa[etapaSeleccionada][Math.floor(Math.random() * cursosPorEtapa[etapaSeleccionada].length)];
+
+        const familia = contextoFamiliar[Math.floor(Math.random() * contextoFamiliar.length)];
+        const entorno = entornoEscolar[Math.floor(Math.random() * entornoEscolar.length)];
+        const estilo = estilosAprendizaje[Math.floor(Math.random() * estilosAprendizaje.length)];
+        const conducta = problemasConducta[Math.floor(Math.random() * problemasConducta.length)];
+
+        const supuesto = `Ubíquese como docente de pedagogía en ${centroSeleccionado}, enmarcado en un ${entorno}.
+        Dentro del alumnado que atiende en el centro, en el curso ${cursoSeleccionado} de ${etapaSeleccionada} se encuentra un alumno con ${neeSeleccionada}.
+        A nivel familiar, se destaca un tipo de ${familia}.
+        De acuerdo a su informe de evaluación, el alumno responde mejor a un enfoque ${estilo}.
+        A nivel conductual, podemos afirmar que presenta ${conducta}.
+        Como docente de Pedagogía Terapéutica, diseña una propuesta de intervención considerando la normativa vigente y estrategias inclusivas.`;
+
+        document.getElementById("output").innerText = supuesto;
+    }
+</script>
+
+</body>
+</html>
