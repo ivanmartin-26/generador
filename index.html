@@ -59,6 +59,27 @@
             font-weight: bold;
             color: #333;
         }
+        input {
+            width: 50px;
+            text-align: center;
+            padding: 5px;
+            font-size: 16px;
+            margin-right: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        #editor {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            display: none; /* hidden by default */
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 14px;
+            font-family: 'Arial', sans-serif;
+            resize: vertical;
+        }
     </style>
 </head>
 <body>
@@ -67,13 +88,19 @@
     <h2>Generador de Supuestos Prácticos</h2>
     <button onclick="generarAzar()">Generar Supuesto Aleatorio</button>
     <div class="output" id="output"></div>
-    <h3>Temporizador</h3>
-    <button onclick="iniciarTemporizador(45)">Iniciar 45 min</button>
-    <button onclick="iniciarTemporizador(60)">Iniciar 60 min</button>
+
+    <h3>Temporizador Personalizable</h3>
+    <input type="number" id="minutos" placeholder="Minutos" min="1" max="999">
+    <button onclick="iniciarTemporizadorPersonalizado()">Iniciar Temporizador</button>
     <p id="timer">Tiempo restante: --:--</p>
+
+    <button onclick="activarEdicion()" id="editarBtn" style="margin-top: 20px;">Editar / Personalizar Texto</button>
+    <textarea id="editor"></textarea>
+    <button onclick="guardarEdicion()" id="guardarBtn" style="display: none; margin-top: 10px;">Guardar Cambios</button>
 </div>
 
 <script>
+    // Variables y funciones originales
     const cursosPorEtapa = {
         "Infantil": ["1º", "2º", "3º"],
         "Primaria": ["1º", "2º", "3º", "4º", "5º", "6º"],
@@ -93,10 +120,40 @@
         "TEA": { centros: ["Centro Ordinario", "Centro Ordinario con Aula TEA", "Centro Educación Especial"], etapas: ["Infantil", "Primaria", "ESO", "EBO"] },
     };
 
-    const contextoFamiliar = ["familia colaboradora", "familia ausente", "familia sobreprotectora", "familia con dificultades", "familia en conflicto", "familia con expectativas altas"];
-    const entornoEscolar = ["centro urbano con alta diversidad", "centro rural", "barrio con alta presencia de población migrante", "proyecto de innovación tecnológica", "claustro con necesidades de formación en inclusión"];
-    const estilosAprendizaje = ["manipulativo", "estructurado", "en pequeños grupo", "medidado por las TIC", "autónomo e independiente", "con apoyos en la regulación emocional"];
-    const problemasConducta = ["sin problemas de conducta", "dificultades en la adaptación a normas", "baja tolerancia a la frustración", "impulsividad y falta de autocontrol", "conducta desafiante", "problemas de socialización"];
+    const contextoFamiliar = [
+        "familia colaboradora",
+        "familia ausente",
+        "familia sobreprotectora",
+        "familia con dificultades",
+        "familia en conflicto",
+        "familia con expectativas altas"
+    ];
+
+    const entornoEscolar = [
+        "centro urbano con alta diversidad",
+        "centro rural",
+        "barrio con alta presencia de población migrante",
+        "proyecto de innovación tecnológica",
+        "claustro con necesidades de formación en inclusión"
+    ];
+
+    const estilosAprendizaje = [
+        "manipulativo",
+        "estructurado",
+        "en pequeños grupo",
+        "medidado por las TIC",
+        "autónomo e independiente",
+        "con apoyos en la regulación emocional"
+    ];
+
+    const problemasConducta = [
+        "sin problemas de conducta",
+        "dificultades en la adaptación a normas",
+        "baja tolerancia a la frustración",
+        "impulsividad y falta de autocontrol",
+        "conducta desafiante",
+        "problemas de socialización"
+    ];
 
     function generarAzar() {
         const neeKeys = Object.keys(centrosPorNEE);
@@ -112,7 +169,7 @@
         const estilo = estilosAprendizaje[Math.floor(Math.random() * estilosAprendizaje.length)];
         const conducta = problemasConducta[Math.floor(Math.random() * problemasConducta.length)];
 
-        const supuesto = `Ubíquese como docente de pedagogía en ${centroSeleccionado}, enmarcado en un ${entorno}.
+        const supuesto = `Ubíquese como docente de pedagogía en ${centroSeleccionado}, ubicado en un ${entorno}.
         Dentro del alumnado que atiende en el centro, en el curso ${cursoSeleccionado} de ${etapaSeleccionada} se encuentra un alumno con ${neeSeleccionada}.
         A nivel familiar, se destaca un tipo de ${familia}.
         De acuerdo a su informe de evaluación, el alumno responde mejor a un enfoque ${estilo}.
@@ -120,6 +177,58 @@
         Como docente de Pedagogía Terapéutica, diseña una propuesta de intervención considerando la normativa vigente y estrategias inclusivas.`;
 
         document.getElementById("output").innerText = supuesto;
+    }
+
+    // Mantenemos el temporizador personalizable intacto
+    function iniciarTemporizadorPersonalizado() {
+        let minutos = document.getElementById("minutos").value;
+        if (!minutos || minutos <= 0) {
+            alert("Introduce un número válido de minutos.");
+            return;
+        }
+        let tiempoRestante = minutos * 60;
+        actualizarTemporizador(tiempoRestante);
+
+        let interval = setInterval(() => {
+            tiempoRestante--;
+            actualizarTemporizador(tiempoRestante);
+            if (tiempoRestante <= 0) {
+                clearInterval(interval);
+                document.getElementById("timer").innerText = "Tiempo terminado";
+            }
+        }, 1000);
+    }
+
+    function actualizarTemporizador(segundos) {
+        let minutos = Math.floor(segundos / 60);
+        let segundosRestantes = segundos % 60;
+        document.getElementById("timer").innerText = `Tiempo restante: ${minutos}:${segundosRestantes.toString().padStart(2, '0')}`;
+    }
+
+    // Nueva funcionalidad para editar / personalizar el texto generado
+    function activarEdicion() {
+        const textoActual = document.getElementById("output").innerText;
+        const editor = document.getElementById("editor");
+        const guardarBtn = document.getElementById("guardarBtn");
+
+        // Mostramos el textarea y el botón de guardar
+        editor.style.display = "block";
+        guardarBtn.style.display = "inline-block";
+
+        // Pasamos el texto actual al editor
+        editor.value = textoActual;
+    }
+
+    function guardarEdicion() {
+        const editor = document.getElementById("editor");
+        const output = document.getElementById("output");
+
+        // Actualizamos el contenido del output con los cambios
+        output.innerText = editor.value;
+
+        // Opcionalmente, podríamos ocultar el editor y el botón de guardar
+        // editor.style.display = "none";
+        // document.getElementById("guardarBtn").style.display = "none";
     }
 </script>
 
